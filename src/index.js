@@ -10,6 +10,7 @@ const io = new Server(server);
 
 io.on("connection", (socket) => {
   socket.emit("eventFromServer", "Hello, World 👋");
+  //console.log("CONNECTED");
 
   socket.on("lapCompleted", (message) => {
     //console.log('data received:', message);
