@@ -4,13 +4,13 @@ import { Server } from "socket.io";
 
 const PORT = process.env.port || 3000;
 const app = express();
-const server = createServer(app, {
+const server = createServer(app);
+
+const io = new Server(server, {
   cors: {
     origin: "https://e05-tracker.vercel.app",
   },
 });
-
-const io = new Server(server);
 
 io.on("connection", (socket) => {
   socket.emit("eventFromServer", "Hello, World 👋");
