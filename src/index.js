@@ -10,6 +10,7 @@ const io = new Server(server, {
   cors: {
     origin: "https://e05-tracker.vercel.app",
   },
+  pingTimeout: 60000,
 });
 
 io.on("connection", (socket) => {
