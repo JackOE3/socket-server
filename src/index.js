@@ -13,8 +13,10 @@ const io = new Server(server, {
   pingTimeout: 60000,
 });
 
+let current_cp_count = 0;
+
 io.on("connection", (socket) => {
-  socket.emit("eventFromServer", "Hello, World 👋");
+  socket.emit("loadData", { current_cp_count });
   //console.log("CONNECTED");
 
   socket.on("lapCompleted", (message) => {
@@ -23,6 +25,7 @@ io.on("connection", (socket) => {
   });
   socket.on("cpCompleted", (message) => {
     //console.log('data received:', message);
+    current_cp_count = message.current_cp_count;
     io.emit("cpCompletedResponse", message);
   });
   socket.on("reset", () => {
