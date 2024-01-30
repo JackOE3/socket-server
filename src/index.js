@@ -11,6 +11,7 @@ const io = new Server(server, {
     origin: "https://e05-tracker.vercel.app",
   },
   pingTimeout: 60000,
+  connectionStateRecovery: {},
 });
 
 let current_cp_count = 0;
