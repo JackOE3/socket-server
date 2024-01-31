@@ -39,6 +39,9 @@ io.on("connection", (socket) => {
   socket.emit("loadData", stats);
   //console.log("CONNECTED");
 
+  socket.on("pythonConnected", () => {
+    io.emit("pythonConnectedResponse");
+  });
   socket.on("cpCompleted", (message) => {
     io.emit("cpCompletedResponse", message);
 
