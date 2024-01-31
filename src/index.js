@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
     if (stats.current_cp_count % CPS_PER_LAP === 5)
       trick_start_time = stats.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 0) {
-      const trickTime = current_cp_split - trick_start_time;
+      const trickTime = stats.current_cp_split - trick_start_time;
       // "This sector without the trick is on average exactly 21 seconds long."
       const trickDiff = (trickTime - 21000) / 1000;
       stats.trick_diff.push(trickDiff);
@@ -65,14 +65,14 @@ io.on("connection", (socket) => {
       stats.lap_times.push(current_lap_time);
       stats.lap_splits.push(stats.current_cp_split);
 
-      /* io.emit("lapStats", {
+      io.emit("lapStats", {
         current_lap: stats.current_lap,
         current_lap_time: current_lap_time,
         current_lap_split: stats.current_cp_split,
         current_trick_diff: trickDiff,
         trick_avg_diff: stats.trick_avg_diff,
         trick_median_diff: stats.trick_median_diff,
-      }); */
+      });
       // start at 2nd lap:
       if (stats.current_cp_count > CPS_PER_LAP) {
         const sum = stats.lap_times.reduce((a, b) => a + b, 0);
@@ -81,14 +81,16 @@ io.on("connection", (socket) => {
         const current_est_pace =
           stats.lap_times[0] + 59 * stats.current_avg_lap;
         stats.est_pace.push(current_est_pace);
-        stats.current_median_lap = median(stats.lap_times.slice(1)); //omit 1st lap
+        if (stats.lap_times.length >= 3)
+          stats.current_median_lap = median(stats.lap_times.slice(1));
+        //omit 1st lap
+        else stats.current_median_lap = undefined;
 
-        /* io.emit("lapStatsExtra", {
+        io.emit("lapStatsExtra", {
           current_avg_lap: stats.current_avg_lap,
           current_median_lap: stats.current_median_lap,
-          //avg_lap_times,
           current_est_pace: current_est_pace,
-        }); */
+        });
       }
     }
   });
