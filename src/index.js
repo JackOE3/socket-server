@@ -20,7 +20,7 @@ const stats = {
   current_lap: 1,
   lap_times: [],
   lap_splits: [],
-  est_pace: [],
+  est_pace: [0],
   avg_lap_times: [],
   current_avg_lap: 0,
   current_median_lap: 0,
@@ -65,14 +65,14 @@ io.on("connection", (socket) => {
       stats.lap_times.push(current_lap_time);
       stats.lap_splits.push(stats.current_cp_split);
 
-      io.emit("lapStats", {
+      /* io.emit("lapStats", {
         current_lap: stats.current_lap,
         current_lap_time: current_lap_time,
         current_lap_split: stats.current_cp_split,
         current_trick_diff: trickDiff,
         trick_avg_diff: stats.trick_avg_diff,
         trick_median_diff: stats.trick_median_diff,
-      });
+      }); */
       // start at 2nd lap:
       if (stats.current_cp_count > CPS_PER_LAP) {
         const sum = stats.lap_times.reduce((a, b) => a + b, 0);
@@ -83,12 +83,12 @@ io.on("connection", (socket) => {
         stats.est_pace.push(current_est_pace);
         stats.current_median_lap = median(stats.lap_times.slice(1)); //omit 1st lap
 
-        io.emit("lapStatsExtra", {
+        /* io.emit("lapStatsExtra", {
           current_avg_lap: stats.current_avg_lap,
+          current_median_lap: stats.current_median_lap,
           //avg_lap_times,
           current_est_pace: current_est_pace,
-          current_median_lap: stats.current_median_lap,
-        });
+        }); */
       }
     }
   });
@@ -99,7 +99,7 @@ io.on("connection", (socket) => {
     stats.current_cp_split = 0;
     stats.lap_times = [];
     stats.lap_splits = [];
-    stats.est_pace = [];
+    stats.est_pace = [0];
     stats.avg_lap_times = [];
     stats.current_avg_lap = 0;
     stats.current_median_lap = 0;
