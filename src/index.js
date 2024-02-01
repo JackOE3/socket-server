@@ -4,7 +4,6 @@ import { Server } from "socket.io";
 
 const PORT = process.env.PORT || 3000;
 const AUTH_TOKEN = process.env.AUTH_TOKEN;
-const AUTH_COOKIE = process.env.AUTH_COOKIE;
 const app = express();
 const server = createServer(app);
 
@@ -37,18 +36,18 @@ const stats = {
 
 let trick_start_time = 0;
 
-io.use((socket, next) => {
+/* io.use((socket, next) => {
   const token = socket.handshake.auth.token;
   if (token === AUTH_TOKEN) socket.handshake.headers.cookie = AUTH_COOKIE;
   next();
-});
+}); */
 
 io.on("connection", (socket) => {
   socket.emit("loadData", stats);
   //console.log("CONNECTED");
 
   socket.on("cpCompleted", (message) => {
-    if (socket.handshake.headers.cookie !== AUTH_COOKIE) {
+    if (socket.handshake.auth.token !== AUTH_TOKEN) {
       console.log(
         "[cpCompleted event] no authentication for socket id:",
         socket.id
@@ -112,7 +111,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("reset", () => {
-    if (socket.handshake.headers.cookie !== AUTH_COOKIE) {
+    if (socket.handshake.auth.token !== AUTH_TOKEN) {
       console.log("[reset event] no authentication for socket id:", socket.id);
       return;
     }
