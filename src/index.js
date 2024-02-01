@@ -2,7 +2,8 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 
-const PORT = process.env.port || 3000;
+const PORT = process.env.PORT || 3000;
+const AUTH_TOKEN = process.env.AUTH_TOKEN;
 const app = express();
 const server = createServer(app);
 
@@ -35,13 +36,18 @@ const stats = {
 
 let trick_start_time = 0;
 
+io.use((socket, next) => {
+  //const token = socket.handshake.auth.token;
+  //if (token === 'abcd') socket.handshake.headers.cookie = 'isAuthenticated';
+  //console.log('use', token, socket.handshake.headers.cookie);
+  console.log("auth_token:", AUTH_TOKEN, process.env.PORT, process.env.port);
+  next();
+});
+
 io.on("connection", (socket) => {
   socket.emit("loadData", stats);
   //console.log("CONNECTED");
 
-  socket.on("pythonConnected", () => {
-    io.emit("pythonConnectedResponse");
-  });
   socket.on("cpCompleted", (message) => {
     io.emit("cpCompletedResponse", message);
 
