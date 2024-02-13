@@ -93,7 +93,10 @@ io.on("connection", (socket) => {
     stats.current_cp_split = message.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 5)
       statsHidden.trick_start_time = stats.current_cp_split;
-    if (stats.current_cp_count % CPS_PER_LAP === 0) {
+    if (
+      stats.current_cp_count > 0 &&
+      stats.current_cp_count % CPS_PER_LAP === 0
+    ) {
       const trickTime = stats.current_cp_split - statsHidden.trick_start_time;
       // "This sector without the trick is on average exactly 21 seconds long."
       const trickDiff = (trickTime - 21000) / 1000;
