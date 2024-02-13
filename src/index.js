@@ -3,7 +3,25 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 const PORT = process.env.PORT || 3000;
-const AUTH_TOKEN = process.env.AUTH_TOKEN;
+const AUTH_TOKENS = [
+  process.env.AUTH_TOKEN_ROLLIN,
+  process.env.AUTH_TOKEN_JAV,
+  process.env.AUTH_TOKEN_DEMON,
+];
+
+function getPlayer(token) {
+  switch (token) {
+    case process.env.AUTH_TOKEN_ROLLIN:
+      return "rollin";
+    case process.env.AUTH_TOKEN_JAV:
+      return "jav";
+    case process.env.AUTH_TOKEN_DEMON:
+      return "demon";
+    default:
+      return undefined;
+  }
+}
+
 const app = express();
 const server = createServer(app);
 
@@ -17,24 +35,27 @@ const io = new Server(server, {
 
 const CPS_PER_LAP = 8;
 
-const stats = {
+const statsRaw = {
   current_lap: 1,
   lap_times: [],
   lap_splits: [],
-  est_pace: [0],
+  est_pace: [undefined],
   avg_lap_times: [],
-  current_avg_lap: 0,
-  current_median_lap: 0,
+  current_avg_lap: undefined,
+  current_median_lap: undefined,
 
-  current_cp_split: 0,
+  current_cp_split: undefined,
   current_cp_count: 0,
-  trick_start_time: 0,
+  trick_start_time: undefined,
   trick_diff: [],
-  trick_avg_diff: 0,
-  trick_median_diff: 0,
+  trick_avg_diff: undefined,
+  trick_median_diff: undefined,
 };
-
-let trick_start_time = 0;
+const playerStats = {};
+const players = ["rollin", "jav", "demon"];
+players.forEach((player) => {
+  playerStats[player] = { ...statsRaw };
+});
 
 /* io.use((socket, next) => {
   const token = socket.handshake.auth.token;
@@ -43,26 +64,32 @@ let trick_start_time = 0;
 }); */
 
 io.on("connection", (socket) => {
-  socket.emit("loadData", stats);
+  socket.emit("loadData", playerStats);
   //console.log("CONNECTED");
+  if (!AUTH_TOKENS.includes(socket.handshake.auth.token)) {
+    console.log("no emit authentication for socket id:", socket.id);
+    return;
+  }
+
+  const player = getPlayer(socket.handshake.auth.token);
+  console.log("player:", player);
+  if (!players.includes(player)) {
+    console.log("player not found:", player);
+    return;
+  }
 
   socket.on("cpCompleted", (message) => {
-    if (socket.handshake.auth.token !== AUTH_TOKEN) {
-      console.log(
-        "[cpCompleted event] no authentication for socket id:",
-        socket.id
-      );
-      return;
-    }
-
     io.emit("cpCompletedResponse", message);
+    //const player = message.player;
+
+    stats = playerStats[player];
 
     stats.current_cp_count = message.current_cp_count;
     stats.current_cp_split = message.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 5)
-      trick_start_time = stats.current_cp_split;
+      stats.trick_start_time = stats.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 0) {
-      const trickTime = stats.current_cp_split - trick_start_time;
+      const trickTime = stats.current_cp_split - stats.trick_start_time;
       // "This sector without the trick is on average exactly 21 seconds long."
       const trickDiff = (trickTime - 21000) / 1000;
       stats.trick_diff.push(trickDiff);
@@ -81,6 +108,7 @@ io.on("connection", (socket) => {
       stats.lap_splits.push(stats.current_cp_split);
 
       io.emit("lapStats", {
+        player,
         current_lap: stats.current_lap,
         current_lap_time: current_lap_time,
         current_lap_split: stats.current_cp_split,
@@ -99,9 +127,9 @@ io.on("connection", (socket) => {
         if (stats.lap_times.length >= 3)
           stats.current_median_lap = median(stats.lap_times.slice(1));
         //omit 1st lap
-        else stats.current_median_lap = undefined;
 
         io.emit("lapStatsExtra", {
+          player,
           current_avg_lap: stats.current_avg_lap,
           current_median_lap: stats.current_median_lap,
           current_est_pace: current_est_pace,
@@ -110,25 +138,24 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("reset", () => {
-    if (socket.handshake.auth.token !== AUTH_TOKEN) {
-      console.log("[reset event] no authentication for socket id:", socket.id);
-      return;
-    }
+  socket.on("reset", (message) => {
     io.emit("resetResponse");
+    playerStats[player] = { ...statsRaw };
+    /*  stats = playerStats[player];
+
     stats.current_cp_count = 0;
     stats.current_cp_split = 0;
     stats.lap_times = [];
     stats.lap_splits = [];
     stats.est_pace = [0];
     stats.avg_lap_times = [];
-    stats.current_avg_lap = 0;
-    stats.current_median_lap = 0;
+    stats.current_avg_lap = undefined;
+    stats.current_median_lap = undefined;
     stats.current_cp_split = 0;
     stats.current_cp_count = 0;
     stats.trick_diff = [];
     stats.trick_avg_diff = 0;
-    stats.trick_median_diff = 0;
+    stats.trick_median_diff = 0; */
   });
 });
 
