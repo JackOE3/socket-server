@@ -46,15 +46,19 @@ const statsRaw = {
 
   current_cp_split: undefined,
   current_cp_count: 0,
-  trick_start_time: undefined,
   trick_diff: [],
   trick_avg_diff: undefined,
   trick_median_diff: undefined,
 };
+const statsHidden = {
+  trick_start_time: undefined,
+};
 const playerStats = {};
+const playerStatsHidden = {};
 const players = ["rollin", "jav", "demon"];
 players.forEach((player) => {
   playerStats[player] = { ...statsRaw };
+  playerStatsHidden[player] = { ...statsHidden };
 });
 
 /* io.use((socket, next) => {
@@ -82,14 +86,15 @@ io.on("connection", (socket) => {
     io.emit("cpCompletedResponse", { player, ...message });
     //const player = message.player;
 
-    stats = playerStats[player];
+    const stats = playerStats[player];
+    const statsHidden = playerStatsHidden[player];
 
     stats.current_cp_count = message.current_cp_count;
     stats.current_cp_split = message.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 5)
-      stats.trick_start_time = stats.current_cp_split;
+      statsHidden.trick_start_time = stats.current_cp_split;
     if (stats.current_cp_count % CPS_PER_LAP === 0) {
-      const trickTime = stats.current_cp_split - stats.trick_start_time;
+      const trickTime = stats.current_cp_split - statsHidden.trick_start_time;
       // "This sector without the trick is on average exactly 21 seconds long."
       const trickDiff = (trickTime - 21000) / 1000;
       stats.trick_diff.push(trickDiff);
