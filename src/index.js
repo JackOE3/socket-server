@@ -149,21 +149,6 @@ io.on("connection", (socket) => {
   socket.on("reset", (message) => {
     io.emit("resetResponse", { player });
     playerStats[player] = deepClone(statsRaw);
-    /*  stats = playerStats[player];
-
-    stats.current_cp_count = 0;
-    stats.current_cp_split = 0;
-    stats.lap_times = [];
-    stats.lap_splits = [];
-    stats.est_pace = [0];
-    stats.avg_lap_times = [];
-    stats.current_avg_lap = undefined;
-    stats.current_median_lap = undefined;
-    stats.current_cp_split = 0;
-    stats.current_cp_count = 0;
-    stats.trick_diff = [];
-    stats.trick_avg_diff = 0;
-    stats.trick_median_diff = 0; */
   });
 });
 
@@ -186,4 +171,6 @@ function median(values) {
     : (values[half - 1] + values[half]) / 2;
 }
 
-export const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
