@@ -57,8 +57,8 @@ const playerStats = {};
 const playerStatsHidden = {};
 const players = ["rollin", "jav", "demon"];
 players.forEach((player) => {
-  playerStats[player] = { ...statsRaw };
-  playerStatsHidden[player] = { ...statsHidden };
+  playerStats[player] = deepClone(statsRaw);
+  playerStatsHidden[player] = deepClone(statsHidden);
 });
 
 /* io.use((socket, next) => {
@@ -148,7 +148,7 @@ io.on("connection", (socket) => {
 
   socket.on("reset", (message) => {
     io.emit("resetResponse", { player });
-    playerStats[player] = { ...statsRaw };
+    playerStats[player] = deepClone(statsRaw);
     /*  stats = playerStats[player];
 
     stats.current_cp_count = 0;
@@ -185,3 +185,5 @@ function median(values) {
     ? values[half]
     : (values[half - 1] + values[half]) / 2;
 }
+
+export const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
