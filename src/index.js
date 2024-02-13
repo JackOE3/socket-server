@@ -1,3 +1,4 @@
+import { info } from "console";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -8,15 +9,16 @@ const AUTH_TOKENS = [
   process.env.AUTH_TOKEN_JAV,
   process.env.AUTH_TOKEN_DEMON,
 ];
+const players = ["Rollin", "JaV", "Demon"];
 
 function getPlayer(token) {
   switch (token) {
-    case process.env.AUTH_TOKEN_ROLLIN:
-      return "rollin";
-    case process.env.AUTH_TOKEN_JAV:
-      return "jav";
-    case process.env.AUTH_TOKEN_DEMON:
-      return "demon";
+    case AUTH_TOKENS[0]:
+      return players[0];
+    case AUTH_TOKENS[1]:
+      return players[1];
+    case AUTH_TOKENS[2]:
+      return players[2];
     default:
       return undefined;
   }
@@ -55,10 +57,12 @@ const statsHidden = {
 };
 const playerStats = {};
 const playerStatsHidden = {};
-const players = ["rollin", "jav", "demon"];
+const connected = {};
+
 players.forEach((player) => {
   playerStats[player] = deepClone(statsRaw);
   playerStatsHidden[player] = deepClone(statsHidden);
+  connected[player] = false;
 });
 
 /* io.use((socket, next) => {
@@ -68,7 +72,8 @@ players.forEach((player) => {
 }); */
 
 io.on("connection", (socket) => {
-  socket.emit("loadData", playerStats);
+  socket.emit("loadData", { playerStats, connected });
+
   //console.log("CONNECTED");
   if (!AUTH_TOKENS.includes(socket.handshake.auth.token)) {
     console.log("no emit authentication for socket id:", socket.id);
@@ -81,6 +86,14 @@ io.on("connection", (socket) => {
     console.log("player not found:", player);
     return;
   }
+
+  connected[player] = true;
+  io.emit("playerConnected", player);
+
+  socket.on("disconnect", () => {
+    connected[player] = false;
+    io.emit("playerDisconnected", player);
+  });
 
   socket.on("cpCompleted", (message) => {
     io.emit("cpCompletedResponse", { player, ...message });
