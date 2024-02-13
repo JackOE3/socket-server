@@ -1,4 +1,3 @@
-import { info } from "console";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -8,8 +7,9 @@ const AUTH_TOKENS = [
   process.env.AUTH_TOKEN_ROLLIN,
   process.env.AUTH_TOKEN_JAV,
   process.env.AUTH_TOKEN_DEMON,
+  process.env.AUTH_TOKEN_ROTAKER,
 ];
-const players = ["Rollin", "JaV", "Demon"];
+const players = ["Rollin", "JaV", "Demon", "RotakeR"];
 
 function getPlayer(token) {
   const idx = AUTH_TOKENS.findIndex((e) => e === token);
