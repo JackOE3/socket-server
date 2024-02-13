@@ -12,16 +12,9 @@ const AUTH_TOKENS = [
 const players = ["Rollin", "JaV", "Demon"];
 
 function getPlayer(token) {
-  switch (token) {
-    case AUTH_TOKENS[0]:
-      return players[0];
-    case AUTH_TOKENS[1]:
-      return players[1];
-    case AUTH_TOKENS[2]:
-      return players[2];
-    default:
-      return undefined;
-  }
+  const idx = AUTH_TOKENS.findIndex((e) => e === token);
+  if (idx === -1) return undefined;
+  return players[idx];
 }
 
 const app = express();
