@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
   }
 
   socket.on("cpCompleted", (message) => {
-    io.emit("cpCompletedResponse", message);
+    io.emit("cpCompletedResponse", { player, ...message });
     //const player = message.player;
 
     stats = playerStats[player];
@@ -139,7 +139,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("reset", (message) => {
-    io.emit("resetResponse");
+    io.emit("resetResponse", { player });
     playerStats[player] = { ...statsRaw };
     /*  stats = playerStats[player];
 
