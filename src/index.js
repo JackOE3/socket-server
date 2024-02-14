@@ -69,12 +69,12 @@ io.on("connection", (socket) => {
 
   //console.log("CONNECTED");
   if (!AUTH_TOKENS.includes(socket.handshake.auth.token)) {
-    console.log("no emit authentication for socket id:", socket.id);
+    //console.log("no emit authentication for socket id:", socket.id);
     return;
   }
 
   const player = getPlayer(socket.handshake.auth.token);
-  console.log("player:", player);
+  console.log("player connected:", player);
   if (!players.includes(player)) {
     console.log("player not found:", player);
     return;
