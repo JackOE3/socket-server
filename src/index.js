@@ -84,6 +84,7 @@ io.on("connection", (socket) => {
     connected[player] = false;
     socket.broadcast.emit("playerDisconnected", player);
     socket.emit("client_disconnected", player);
+    console.log("player disconnected:", player);
   });
 
   socket.on("cpCompleted", (message) => {
